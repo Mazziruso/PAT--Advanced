@@ -24,17 +24,11 @@ inline void swap(int i, int j) {
 void reverseList(int i, int j) {
 	int l = i;
 	int r = j;
-	int next = List[j].next;
 	while (l < r) {
 		swap(l, r);
 		l++;
 		r--;
 	}
-
-	for (int k = i; k < j; k++) {
-		List[k].next = List[k + 1].addr;
-	}
-	List[j].next = next;
 }
 
 int main() {
@@ -76,7 +70,7 @@ int main() {
 
 	for (int j = 0; j < index; j++) {
 		if (j < index - 1) {
-			printf("%05d %d %05d\n", List[j].addr, List[j].key, List[j].next);
+			printf("%05d %d %05d\n", List[j].addr, List[j].key, List[j+1].addr);
 		}
 		else {
 			printf("%05d %d -1\n", List[j].addr, List[j].key);
