@@ -2,57 +2,125 @@
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
-#include <string>
-#include <map>
 #include <vector>
+#include <map>
+#include <string>
 
 using namespace std;
 
-struct timeSta {
+struct carInfo {
+	string id;
 	int time;
-	bool IO; //if in then true;
+	bool IO; //true denotes in status
+	bool operator<(struct carInfo &c1) {
+		if (this->id.compare(c1.id) == 0) {
+			return this->time < c1.time;
+		}
+		else {
+			return this->id.compare(c1.id) < 0;
+		}
+	}
 };
 
-typedef map<string, int>::iterator iter;
-
+struct carInfo *carRecord;
+struct carInfo *validRecord;
 int N;
-map<string, int> nameID;
-vector<timeSta> *carTime;
-string *car;
 
 int toTime(int hh, int mm, int ss) {
-	return hh * 3600 + mm * 60 + ss;
+	return 3600 * hh + 60 * mm + ss;
+}
+
+int binaryFindCurrent(int current, int len) {
+	int l = 0;
+	int r = len - 1;
+	int mid;
+	while (l <= r) {
+		mid = (l + r) / 2;
+		if (validRecord[mid].time == current) {
+			r = mid ;
+			break;
+		}
+		else if(validRecord[mid].time > current) {
+			r = mid - 1;
+		}
+		else {
+			l = mid + 1;
+		}
+	}
+	return r;
 }
 
 int main() {
+
 	int K;
 	scanf_s("%d %d", &N, &K);
-
-	carTime = new vector<timeSta>[N];
-	car = new string[N];
-
-	struct timeSta carT;
+	carRecord = new carInfo[N];
+	validRecord = new carInfo[N];
+	
 	int hh, mm, ss;
-	string ID, status;
-	int index = 0;
-	iter it;
+	char id[8];
+	char status[4];
+	struct carInfo c;
 	for (int i = 0; i < N; i++) {
-		cin >> ID;
-		scanf_s("%d:%d:%d", &hh, &mm, &ss);
-		cin >> status;
-		carT.time = toTime(hh, mm, ss);
-		carT.IO = (status == "in") ? true : false;
-		it = nameID.find(ID);
-		if (it == nameID.end()) {
-			nameID.insert(pair<string,int>(ID,index));
-			carTime[index].push_back(carT);
-			car[index] = ID;
+		scanf_s("%s %d:%d:%d %s", id, 8, hh, mm, ss, status, 4);
+		carRecord[i].id = string(id);
+		carRecord[i].time = toTime(hh, mm, ss);
+		carRecord[i].IO = (status[0] == 'i');
+	}
+
+	sort(carRecord, carRecord+N);
+
+	int index = 0; //in pair with out , index turns to even
+	for (int i = 0; i < N; i++) {
+		if (carRecord[i].IO) {
+			index = (index % 2 == 1) ? (index - 1) : index;
+			validRecord[index] = carRecord[i];
 			index++;
 		}
-		else {
-			carTime[it->second].push_back(carT);
-			car[it->second]=ID:
+		else if(index % 2 == 1) {
+			validRecord[index] = carRecord[i];
+			index++;
 		}
+	}
+
+	//calculate longest period
+	vector<int> carPeriod;
+	int period;
+	int maxPeriod = -1;
+	string num = "";
+	for (int i = 0; i < index; i+=2) {
+		if (num.compare(validRecord[i].id) != 0) {
+			carPeriod.push_back(period);
+			if (maxPeriod < period) {
+				maxPeriod = period;
+			}
+			num = validRecord[i].id;
+			period = validRecord[i + 1].time - validRecord[i].time;
+		}
+		else {
+			period += validRecord[i + 1].time - validRecord[i].time;
+		}
+	}
+
+	int current;
+	int pivot;
+	int res;
+	for (int i = 0; i < K; i++) {
+		scanf_s("%d:%d:%d", &hh, &mm, &ss);
+		current = toTime(hh, mm, ss);
+		pivot = binaryFindCurrent(current, index);
+		res += (validRecord[pivot].IO ? 1 : 0);
+		pivot++;
+		while (pivot < N) {
+			if (validRecord[pivot].IO) {
+				res--;
+			}
+			else {
+				res++;
+			}
+			pivot++;
+		}
+		printf("%d\n", res);
 	}
 
 	system("pause");
