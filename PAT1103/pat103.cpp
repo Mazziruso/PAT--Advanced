@@ -137,7 +137,7 @@ vector<solution> resList;
 int dp[401][21] = { -1 };
 struct solution s;
 int nk[401] = { 0 };
-int remZero[401] = { 0 }; //¼ÇÂ¼dpÖĞÃ¿Ò»ÁĞ´óÓÚ0µÄ×îĞ¡factor£¬·ÀÖ¹·´¸´µ÷ÓÃpow(root,1.0/P)ÒÔÖÁÓÚ³¬Ê±
+int remZero[401] = { 0 }; //è®°å½•dpä¸­æ¯ä¸€åˆ—å¤§äº0çš„æœ€å°factorï¼Œé˜²æ­¢åå¤è°ƒç”¨pow(root,1.0/P)ä»¥è‡³äºè¶…æ—¶
 
 //base^exp
 int myPow(int base, int exp) {
@@ -155,7 +155,7 @@ int myPow(int base, int exp) {
 	return res;
 }
 
-//¼ÇÂ¼µ±Ç°Ê£ÓàÖµ£¬Òò×Ó£¬²ãÊıÒÔ¼°²¿·ÖÒò×ÓºÍ
+//è®°å½•å½“å‰å‰©ä½™å€¼ï¼Œå› å­ï¼Œå±‚æ•°ä»¥åŠéƒ¨åˆ†å› å­å’Œ
 bool DFS(int root, int fac, int level, int facSum) {
 	if (K - 1 == level && root==0) {
 		nk[level] = fac;
@@ -196,7 +196,7 @@ int main() {
 	int M = (int)pow(N, 1.0 / P);
 	for (int i = 1; i <= N; i++) {
 		for (int j = 1; j <= M; j++) {
-			dp[i][j] = i - (int)pow(j, P);
+			dp[i][j] = i - (int)myPow(j, P);
 			remZero[i] = (dp[i][j] >= 0) ? j : remZero[i];
 		}
 	}
