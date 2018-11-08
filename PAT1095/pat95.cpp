@@ -2,139 +2,134 @@
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
-#include <string>
-#include <map>
 #include <vector>
+#include <map>
+#include <string>
 
 using namespace std;
 
-struct timeSta {
+struct carInfo {
+	string id;
 	int time;
-	bool IO; //if in then true;
-	bool operator<(timeSta s1) {
-		return this->time < s1.time;
+	bool IO; //true denotes in status
+	bool operator<(struct carInfo &c1) {
+		if (this->id.compare(c1.id) == 0) {
+			return this->time < c1.time;
+		}
+		else {
+			return this->id.compare(c1.id) < 0;
+		}
 	}
 };
 
-typedef map<string, int>::iterator iter;
-
+struct carInfo *carRecord;
+struct carInfo *validRecord;
 int N;
-map<string, int> nameID;
-vector<timeSta> *carTime;
-string *car;
-vector<int> *res;
 
 int toTime(int hh, int mm, int ss) {
-	return hh * 3600 + mm * 60 + ss;
+	return 3600 * hh + 60 * mm + ss;
 }
 
-bool checkIn(int car, int time) {
-	int start = 0;
-	int end = res[car].size() - 1;
+bool cmp(struct carInfo c1, struct carInfo c2) {
+    return c1.time < c2.time;
+}
+
+int binaryFindCurrent(int current, int len) {
+	int l = 0;
+	int r = len - 1;
 	int mid;
-	while (start <= end) {
-		mid = (start + end) / 2;
-		if (res[car][mid] == time) {
-			end = mid;
+	while (l <= r) {
+		mid = (l + r) / 2;
+		if (validRecord[mid].time == current) {
+			r = mid ;
 			break;
 		}
-		else if (res[car][mid] > time) {
-			end = mid - 1;
+		else if(validRecord[mid].time > current) {
+			r = mid - 1;
 		}
 		else {
-			start = mid + 1;
+			l = mid + 1;
 		}
 	}
-	return end % 2 == 0;
+	return r;
 }
 
 int main() {
+
 	int K;
-	scanf_s("%d %d", &N, &K);
-
-	carTime = new vector<timeSta>[N];
-	car = new string[N];
-
-	struct timeSta carT;
+	scanf("%d %d", &N, &K);
+	carRecord = new carInfo[N];
+	validRecord = new carInfo[N];
+	
 	int hh, mm, ss;
-	char IDc[8]; 
-	char statusc[4];
-	string ID, status;
-	int index = 0;
-	iter it;
+	char id[8];
+	char status[4];
+	struct carInfo c;
 	for (int i = 0; i < N; i++) {
-		scanf_s("%s", IDc, 8);
-		scanf_s("%d:%d:%d", &hh, &mm, &ss);
-		scanf_s("%s", statusc, 4);
-		ID = string(IDc);
-		status = string(statusc);
-		carT.time = toTime(hh, mm, ss);
-		carT.IO = (status == "in") ? true : false;
-		it = nameID.find(ID);
-		if (it == nameID.end()) {
-			nameID.insert(pair<string, int>(ID, index));
-			carTime[index].push_back(carT);
-			car[index] = ID;
-			index++;
-		}
-		else {
-			carTime[it->second].push_back(carT);
-			car[it->second] = ID;
-		}
+		scanf("%s %d:%d:%d %s", id, &hh, &mm, &ss, status);
+		carRecord[i].id = string(id);
+		carRecord[i].time = toTime(hh, mm, ss);
+		carRecord[i].IO = (status[0] == 'i');
 	}
 
-	res = new vector<int>[index];
+	sort(carRecord, carRecord+N);
 
-	int i1 = 0; //in
-	int *periodArray = new int[index];
-	int periodCar = -1; //longest period per car
-	int period = -1; //longest time period
-	for (int i = 0; i < index; i++) {
-		sort(carTime[i].begin(), carTime[i].end());
-		i1 = 0;
-		periodCar = 0;
-		for (int j = 0; j < carTime[i].size(); j++) {
-			if (carTime[i][j].IO) { //in
-				i1 = j;
-			}
-			if (!carTime[i][j].IO && carTime[i][i1].IO) { //in-out pair
-				periodCar += (carTime[i][j].time - carTime[i][i1].time);
-				res[i].push_back(carTime[i][i1].time);
-				res[i].push_back(carTime[i][j].time);
-				i1 = j;
-			}
-		}
-		if (period < periodCar) {
-			period = periodCar;
-		}
-		periodArray[i] = periodCar;
-	}
+    //record max period and valid record
+    int maxPeriod = -1;
+    int index = 0;
+    int period;
+    map<string,int> parkTime;
+    for(int i=0; i<N-1; i++) {
+        if(carRecord[i].id.compare(carRecord[i+1].id)==0 &&
+            carRecord[i].IO && !carRecord[i+1].IO) {
+            validRecord[index++] = carRecord[i];
+            validRecord[index++] = carRecord[i+1];
+            period = carRecord[i+1].time-carRecord[i].time;
+            if(parkTime.find(carRecord[i].id)==parkTime.end()) {
+                parkTime[carRecord[i].id] = 0;
+            }
+            parkTime[carRecord[i].id] += period;
+            maxPeriod = max(maxPeriod,parkTime[carRecord[i].id]);
+        }
+    }
 
-	int count = 0;
-	int stime;
+    sort(validRecord,validRecord+index,cmp);
+
+    //当前驻留车辆
+	int current;
+	int pivot;
+	int res;
 	for (int i = 0; i < K; i++) {
-		scanf_s("%d:%d:%d", &hh, &mm, &ss);
-		stime = toTime(hh, mm, ss);
-		count = 0;
-		for (int j = 0; j < index; j++) {
-			count += (checkIn(j, stime) ? 1 : 0);
+		scanf("%d:%d:%d", &hh, &mm, &ss);
+		current = toTime(hh, mm, ss);
+		pivot = binaryFindCurrent(current, index);
+		res = 0;
+		while (pivot < index) {
+            if(validRecord[pivot].time>current) {
+			    if (validRecord[pivot].IO) {
+				    res--;
+			    }
+			    else {
+				    res++;
+			    }
+            }
+			pivot++;
 		}
-		printf("%d\n", count);
+		printf("%d\n", res);
 	}
 
-	vector<string> resCar;
-	for (int i = 0; i < index; i++) {
-		if (periodArray[i] == period) {
-			resCar.push_back(car[i]);
-		}
-	}
+    string *maxPerCar = new string[parkTime.size()];
+    int ii=0;
+    for(auto iter : parkTime) {
+        if(iter.second == maxPeriod) {
+            maxPerCar[ii++] = iter.first;
+        }
+    }
+    sort(maxPerCar,maxPerCar+ii);
+    for(int i=0; i<ii; i++) {
+        printf("%s ", maxPerCar[i].c_str());
+    }
+    printf("%02d:%02d:%02d\n", maxPeriod/3600, (maxPeriod%3600)/60, maxPeriod%60);
 
-	sort(resCar.begin(), resCar.end());
-	for (auto it : resCar) {
-		printf("%s ", it.c_str());
-	}
-	printf("%02d:%02d:%02d\n", period / 3600, (period % 3600) / 60, period % 60);
-
-	system("pause");
 	return 0;
 }
