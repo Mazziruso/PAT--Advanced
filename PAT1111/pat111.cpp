@@ -36,7 +36,7 @@ int dijkstraTime(int s, int dest) {
 	for (int i = 0; i < N - 1; i++) {
 		k = -1;
 		for (int j = 0; j < N; j++) {
-			if (!visit[j] && (k < 0 || fast[k] < fast[j])) {
+			if (!visit[j] && (k < 0 || fast[k] > fast[j])) {
 				k = j;
 			}
 		}
@@ -77,7 +77,7 @@ int dijkstraDist(int s, int dest) {
 	for (int i = 0; i < N - 1; i++) {
 		k = -1;
 		for (int j = 0; j < N; j++) {
-			if (!visit[j] && (k < 0 || dist[k] < dist[j])) {
+			if (!visit[j] && (k < 0 || dist[k] > dist[j])) {
 				k = j;
 			}
 		}
@@ -159,7 +159,7 @@ int main() {
 		printf("\n");
 	}
 	else {
-		printf("Distance = %d; Time = %d: %d", minD, pathD[pathD.size() - 1]);
+		printf("Distance = %d; Time = %d: %d", minD, minT, pathD[pathD.size() - 1]);
 		for (int i = pathD.size() - 2; i >= 0; i--) {
 			printf(" -> %d", pathD[i]);
 		}
