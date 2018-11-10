@@ -54,8 +54,10 @@ int main() {
 			visit[v2] = (graph[v1][v2] == 1) ? true : visit[v2];
 			v1 = v2;
 		}
-		//为什么这两个不能交换
-		printf("%s\n", (checkHamCycle() && flag) ? "Yes" : "No");
+		//这两个判断顺序不能交换
+		//如果交换了,那么当flag=false时,会忽略checkHamCycle()的执行。
+		//由于checkHamCycle()中含有visit恢复的操作，如果被忽略则会使得visit没恢复
+		printf("%s\n", (checkHamCycle() && flag) ? "YES" : "NO");
 	}
 	system("pause");
 	return 0;
