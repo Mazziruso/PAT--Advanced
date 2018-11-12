@@ -16,12 +16,12 @@ typedef struct station {
 
 int N;
 vector<sta> graph[10001]; //Adjacency List
-//dijkstra��SPFA
+//dijkstra或SPFA
 int dist[10001] = { INT_MAX }; //the total number of stops from the start to the current station
 int trans[10001] = { INT_MAX }; //the total number of transfers from the start to the current station
 bool visit[10001] = { false };
 int pre[10001] = { -1 };
-int line[10001] = { 0 };
+int line[10001] = { 0 }; //代表当前结点在当前过程中的线路
 
 void dijkstra(int s, int dest) {
 	//initialization
@@ -43,7 +43,7 @@ void dijkstra(int s, int dest) {
 			}
 		}
 		visit[k] = true;
-		//��ǰ�˳�
+		//提前退出
 		if (k == dest) {
 			break;
 		}
