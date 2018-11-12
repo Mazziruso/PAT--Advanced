@@ -56,7 +56,7 @@ void dijkstra(int s, int dest) {
 					trans[iter.id] = tmp;
 					dist[iter.id] = dist[k] + 1;
 				}
-				else if (dist[iter.id] == dist[k] + 1 && trans[iter.id] > tmp) {
+				else if (dist[iter.id] == dist[k] + 1 && trans[iter.id] >= tmp) {
 					pre[iter.id] = k;
 					line[iter.id] = iter.line;
 					trans[iter.id] = tmp;
