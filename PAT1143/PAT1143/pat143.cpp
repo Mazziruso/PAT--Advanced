@@ -12,12 +12,13 @@ int child[10001][2];
 int findRchild(int s, int e, int root) {
 	int l = s;
 	int r = e;
-	while (l <= (r + 1)) {
+	while (l <= (r + 1
+		)) {
 		if (root <= pre[l]) {
 			return l;
 		}
 		else if (root > pre[r]) {
-			return (r == e) ? -1 : (e + 1);
+			return (r == e) ? -1 : (r + 1);
 		}
 		l++;
 		r--;
@@ -41,16 +42,70 @@ void constructTree(int s, int e) {
 	constructTree(child[s][1], e);
 }
 
-bool findAncestor(int s, int U, int V) {
-	if (s < 0) {
+bool search(int root, int key) {
+	if (root < 0) {
 		return false;
 	}
-	int root = pre[s];
-	if (U == V && root == U) {
+
+	if (key == pre[root]) {
 		return true;
 	}
-	if (V == root) {
+	else if (key > pre[root]) {
+		return search(child[root][1], key);
+	}
+	else {
+		return search(child[root][0], key);
+	}
+}
 
+void findAncestor(int s, int U, int V) {
+	if (s < 0) {
+		printf("ERROR: %d and %d are not found.\n", U, V);
+		return;
+	}
+	//when U or V is another node' ancestor
+	if (U == pre[s]) {
+		bool flag = search(s, V);
+		if (flag) {
+			printf("%d is an ancestor of %d.\n", U, V);
+		}
+		else {
+			printf("ERROR: %d is not found.\n", V);
+		}
+		return;
+	} else if (V == pre[s]) {
+		bool flag = search(s, U);
+		if (flag) {
+			printf("%d is an ancestor of %d.\n", V, U);
+		}
+		else {
+			printf("ERROR: %d is not found.\n", U);
+		}
+		return;
+	}
+
+	//when two node is at the same subtree
+	if (U < pre[s] && V < pre[s]) {
+		findAncestor(child[s][0], U, V);
+	}
+	else if(U > pre[s] && V > pre[s]) {
+		findAncestor(child[s][1], U, V);
+	}
+	else {
+		bool flag2 = search(s, V);
+		bool flag1 = search(s, U);
+		if (flag1 && flag2) {
+			printf("LCA of %d and %d is %d.\n", U, V, pre[s]);
+		}
+		else if (flag1 && !flag2) {
+			printf("ERROR: %d is not found.\n", V);
+		}
+		else if (!flag1 && flag2) {
+			printf("ERROR: %d is not found.\n", U);
+		}
+		else {
+			printf("ERROR: %d and %d are not found.\n", U, V);
+		}
 	}
 }
 
@@ -74,14 +129,16 @@ int main() {
 	int U, V;
 	while (M--) {
 		scanf_s("%d %d", &U, &V);
-		if (U == V) {
-			printf("%d is an ancestor of %d.\n", U, V);
-		}
-		else if (U > V) {
-
+		if (U != V) {
+			findAncestor(0, U, V);
 		}
 		else {
-
+			if (search(0, U)) {
+				printf("%d is an ancestor of %d.\n", U, V);
+			}
+			else {
+				printf("ERROR: %d and %d are not found.\n", U, V);
+			}
 		}
 	}
 
